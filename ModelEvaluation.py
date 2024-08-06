@@ -2,9 +2,72 @@ import numpy as np
 import tensorflow as tf
 from sklearn.metrics import accuracy_score
 from PIL import Image
+from flask import Flask, render_template,jsonify,request
+from werkzeug.utils import secure_filename
+import os
+
+app = Flask(__name__)
+model = tf.keras.models.load_model('best_model.keras')
+
+app.config["UPLOAD_FOLDER"] = "uploads"
+@app.route("/")
+def home():
+    return render_template('home.html')
+@app.route("/sendPrediction",methods = ["POST"])
+def retPred():
+    if 'image' not in request.files:
+        return jsonify({"Error":"No image file Part"}),400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"Error":"no file selected"}),400
+
+    if file:
+        filename = secure_filename(file.filename)
+
+        # Generate the full file path
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+        file.save(file_path)
+
+        image_path = file_path  # Replace with your image path
+        image = Image.open(image_path)
+
+        # Convert to grayscale (if needed)
+        image = image.convert('L')  # 'L' mode is for grayscale
+
+        # Convert the image to a NumPy array
+        image_array = np.array(image)
+
+        # Normalize pixel values to the range [0, 1]
+        # Pixel values range from 0 to 255 in grayscale images
+        normalized_array = image_array / 255.0
+
+        print(normalized_array.shape)
+
+        if(normalized_array.shape[0] == 20 and normalized_array.shape[1] == 20):
+            normalized_array = normalized_array.T
+            normalized_array = normalized_array.reshape((1, 400))
+
+            yhat_test = model.predict(normalized_array)
+            y_pred_test = np.argmax(yhat_test, axis=1)
+            # y_pred_real = y_pred_test.reshape(-1,1)
+            print(y_pred_test[0])
+            os.remove(file_path)
+
+            return jsonify({"Success":f"{y_pred_test[0]}"})
+        else:
+            os.remove(file_path)
+            return jsonify({"Error": "File should have a dimension of 20x20"})
+
+
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 #getting image
-image_path = f'testImages/image_{945}.png'  # Replace with your image path
+'''image_path = f'testImages/image_{945}.png'  # Replace with your image path
 image = Image.open(image_path)
 
 # Convert to grayscale (if needed)
@@ -20,6 +83,8 @@ normalized_array = normalized_array.T
 normalized_array = normalized_array.reshape((1, 400))
 
 
+
+
 # Load data and model
 data = np.load('test_data.npz')
 x_test, y_test = data['x_test'], data['y_test']
@@ -29,7 +94,7 @@ model = tf.keras.models.load_model('best_model.keras')
 yhat_test = model.predict(normalized_array)
 y_pred_test = np.argmax(yhat_test, axis=1)
 #y_pred_real = y_pred_test.reshape(-1,1)
-print(y_pred_test[0])
+print(y_pred_test[0])'''
 
 
 '''EXTRA NOTES'''

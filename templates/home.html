@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <style>
+            body{
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            .dispImage{
+                max-width: 200px;
+                max-height: 200px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>HANDWRITTEN DIGIT IDENTIFIER</h1>
+        <img class="dispImage" src = "">
+        <input type = "file" class = "imageInput" accept = "image/*">
+        <button class = "uploadBut">Upload</button>
+        <script>
+            $(document).ready(function(e){
+                $(".uploadBut").click(function(e){
+                    var fileInput = document.querySelector(".imageInput")
+                    var file = fileInput.files[0]
+
+                    if(file){
+                        var formData = new FormData();
+                        formData.append('image', file);
+
+                        $.ajax({
+                            url:"/sendPrediction",
+                            type:"POST",
+                            data:formData,
+                            contentType: false,
+                            processData: false,
+                            success:function(data){
+                                console.log(typeof data)
+                                console.log(data)
+                            },
+                            error:function(xhr, status, error) {
+                                alert('Error: ' + error);
+                            }
+                        })
+
+                    }
+                })
+
+                $(".imageInput").on("change",function(event){
+                    var dispImage = document.querySelector(".dispImage")
+                    dispImage.src= ""
+                    const file = event.target.files[0];
+                    if(file){
+                        const reader = new FileReader();
+
+                        reader.onload = function(e){
+                            dispImage.src= e.target.result
+                            console.log(e.target.result)
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                })
+            })
+        </script>
+    </body>
+</html>
