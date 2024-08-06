@@ -2,10 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras import Sequential
+from sklearn.metrics import accuracy_score
 from tensorflow.keras.layers import Dense
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.activations import linear, relu, sigmoid
 np.set_printoptions(edgeitems=2000, linewidth=2000)
+from utility import build_models
 
 #Load data
 x_hold = np.load("data/X.npy")
@@ -21,6 +23,7 @@ print(x_cv.shape)
 print(y_cv.shape)
 print(x_test.shape)
 print(y_test.shape)
+
 
 
 #Displaying data
@@ -46,23 +49,45 @@ for i,ax in enumerate(axes.flat):
 
 #plt.show()
 
+nn_train_accuracy = []
+nn_cv_accuracy = []
 
 #Creating model
-tf.random.set_seed(1234) # for consistent result
-model = Sequential(
-    [
-        tf.keras.Input(shape = (400,)),
-        Dense(units = 25, activation="relu"),
-        Dense(units = 15, activation="relu"),
-        Dense(units = 10, activation="linear"),
-    ]
-)
+nn_model = build_models()
+for model in nn_model:
+    # Setup the loss and optimizer
+    model.compile(
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
+    )
+
+    print(f"Training {model.name}...")
+    # fit model
+    model.fit(x_train, y_train, epochs=40)
+
+    print("DONE!")
+
+    # Predict on training set
+    yhat_train = model.predict(x_train)
+    y_pred_train = np.argmax(yhat_train, axis=1)
+    train_classification_accuracy = accuracy_score(y_train, y_pred_train)
+    nn_train_accuracy.append(train_classification_accuracy)
+
+    # Predict on cross-validation set
+    yhat_cv = model.predict(x_cv)
+    y_pred_cv = np.argmax(yhat_cv, axis=1)
+    cv_classification_accuracy =  accuracy_score(y_cv, y_pred_cv)
+    nn_cv_accuracy.append(cv_classification_accuracy)
 
 
-#model summary
-print(model.summary())
 
-#compile model
+for i in range(len(nn_train_accuracy)):
+    print(f"Train {i}:{nn_train_accuracy[i]},CV:{nn_cv_accuracy[i]}\nDifference: P{nn_train_accuracy[i]}")
+
+
+
+
+'''#compile model
 model.compile(
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
@@ -109,4 +134,4 @@ for i,ax in enumerate(axes.flat):
     ax.set_title(f"{y_train[rand]},{ypred_real}")
     ax.set_axis_off()
 
-plt.show()
+plt.show()'''
