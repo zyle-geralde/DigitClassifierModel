@@ -3,14 +3,25 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense
+from sklearn.model_selection import train_test_split
 from tensorflow.keras.activations import linear, relu, sigmoid
 np.set_printoptions(edgeitems=2000, linewidth=2000)
 
 #Load data
-x_train = np.load("data/X.npy")
-y_train = np.load("data/y.npy")
+x_hold = np.load("data/X.npy")
+y_hold = np.load("data/y.npy")
+
+#split the data
+x_train,x_,y_train,y_ = train_test_split(x_hold,y_hold,test_size=0.40,random_state=1)
+x_cv, x_test, y_cv, y_test = train_test_split(x_, y_, test_size=0.50, random_state=1)
+
 print(x_train.shape)
 print(y_train.shape)
+print(x_cv.shape)
+print(y_cv.shape)
+print(x_test.shape)
+print(y_test.shape)
+
 
 #Displaying data
 import warnings
