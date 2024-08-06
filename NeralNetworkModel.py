@@ -89,11 +89,11 @@ for i in range(len(nn_train_accuracy)):
 best_model_index = np.argmax(nn_cv_accuracy)
 print(best_model_index)
 
-best_model = nn_model[best_model_index]
+'''best_model = nn_model[best_model_index]
 best_model.save('best_model.keras')
 
 # Export x_test and y_test for evaluation
-np.savez('test_data.npz', x_test=x_test, y_test=y_test)
+np.savez('test_data.npz', x_test=x_test, y_test=y_test)'''
 
 
 
