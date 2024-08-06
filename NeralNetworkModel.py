@@ -58,7 +58,8 @@ for model in nn_model:
     # Setup the loss and optimizer
     model.compile(
         loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
+        optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01),
+        metrics=['accuracy']
     )
 
     print(f"Training {model.name}...")
@@ -82,7 +83,17 @@ for model in nn_model:
 
 
 for i in range(len(nn_train_accuracy)):
-    print(f"Train {i}:{nn_train_accuracy[i]},CV:{nn_cv_accuracy[i]}\nDifference: P{nn_train_accuracy[i]}")
+    print(f"Train {i}:{nn_train_accuracy[i]},CV:{nn_cv_accuracy[i]}")
+
+#after trainig model 2 is chosen as it has higher accuracy than the rest
+best_model_index = np.argmax(nn_cv_accuracy)
+print(best_model_index)
+
+best_model = nn_model[best_model_index]
+best_model.save('best_model.keras')
+
+# Export x_test and y_test for evaluation
+np.savez('test_data.npz', x_test=x_test, y_test=y_test)
 
 
 
